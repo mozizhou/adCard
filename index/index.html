@@ -1,0 +1,541 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>index</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <link href="resources/css/jquery-ui-themes.css" type="text/css" rel="stylesheet"/>
+    <link href="resources/css/axure_rp_page.css" type="text/css" rel="stylesheet"/>
+    <link href="data/styles.css" type="text/css" rel="stylesheet"/>
+    <link href="files/index/styles.css" type="text/css" rel="stylesheet"/>
+    <script src="resources/scripts/jquery-1.7.1.min.js"></script>
+    <script src="resources/scripts/jquery-ui-1.8.10.custom.min.js"></script>
+    <script src="resources/scripts/prototypePre.js"></script>
+    <script src="data/document.js"></script>
+    <script src="resources/scripts/prototypePost.js"></script>
+    <script src="files/index/data.js"></script>
+    <script type="text/javascript">
+      $axure.utils.getTransparentGifPath = function() { return 'resources/images/transparent.gif'; };
+      $axure.utils.getOtherPath = function() { return 'resources/Other.html'; };
+      $axure.utils.getReloadPath = function() { return 'resources/reload.html'; };
+
+      // 动态缩放函数
+      function scaleContent() {
+        const baseElement = document.getElementById('base');
+        if (!baseElement) return;
+
+        // 原始尺寸
+        const originalWidth = 375;
+        const originalHeight = 812;
+
+        // 当前屏幕尺寸
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        // 计算X和Y轴的独立缩放比例
+        const scaleX = screenWidth / originalWidth;
+        const scaleY = screenHeight / originalHeight;
+
+        // 应用不同的X和Y缩放比例
+        baseElement.style.transform = `scaleX(${scaleX}) scaleY(${scaleY})`;
+        baseElement.style.transformOrigin = 'top left';
+
+        // 位置设置为左上角
+        baseElement.style.left = '0px';
+        baseElement.style.top = '0px';
+      }
+
+      // 页面切换相关变量
+      let currentPage = 0;
+      const totalPages = 3;
+
+      // 页面切换函数
+      function switchPage() {
+        const baseElement = document.getElementById('base');
+        const fullscreenBg = document.getElementById('fullscreenBg');
+        const switchButton = document.getElementById('switchButton');
+        const body = document.body;
+        const loadingSpinner = switchButton.querySelector('.loading-spinner');
+
+        // 禁用按钮防止重复点击并显示加载动画
+        switchButton.disabled = true;
+        loadingSpinner.style.display = 'block';
+
+        // 添加科技感切换动画
+        baseElement.classList.add('switching');
+        fullscreenBg.classList.add('switching');
+        body.classList.add('switching');
+
+        // 获取当前的缩放变换
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        const originalWidth = 375;
+        const originalHeight = 812;
+        const scaleX = screenWidth / originalWidth;
+        const scaleY = screenHeight / originalHeight;
+
+        // 第一阶段：缩小和淡出
+        baseElement.style.transform = `scaleX(${scaleX * 0.7}) scaleY(${scaleY * 0.7}) rotateY(15deg)`;
+        baseElement.style.opacity = '0.2';
+        baseElement.style.filter = 'blur(3px) brightness(0.7)';
+
+        // 同时为全屏背景添加动画
+        fullscreenBg.style.transform = 'scale(0.7) rotateY(15deg)';
+        fullscreenBg.style.filter = 'blur(3px) brightness(0.7)';
+        if (fullscreenBg.classList.contains('active')) {
+          fullscreenBg.style.opacity = '0.2';
+        }
+
+        // 如果即将切换到第1页，开始淡出全屏背景
+        const nextPage = (currentPage + 1) % totalPages;
+        if (nextPage === 0 && fullscreenBg.classList.contains('active')) {
+          fullscreenBg.style.opacity = '0';
+        }
+
+        setTimeout(() => {
+          // 切换到下一页
+          currentPage = (currentPage + 1) % totalPages;
+
+          // 根据当前页面更新内容
+          updatePageContent();
+
+          // 第二阶段：放大和淡入
+          baseElement.style.transform = `scaleX(${scaleX * 1.1}) scaleY(${scaleY * 1.1}) rotateY(-5deg)`;
+          baseElement.style.opacity = '0.8';
+          baseElement.style.filter = 'blur(1px) brightness(1.2)';
+
+          // 全屏背景第二阶段动画
+          fullscreenBg.style.transform = 'scale(1.1) rotateY(-5deg)';
+          fullscreenBg.style.filter = 'blur(1px) brightness(1.2)';
+          if (fullscreenBg.classList.contains('active')) {
+            fullscreenBg.style.opacity = '0.8';
+          }
+
+          // 如果切换到第1页，保持全屏背景淡出状态
+          if (currentPage === 0) {
+            fullscreenBg.style.opacity = '0';
+          }
+
+          setTimeout(() => {
+            // 第三阶段：恢复正常
+            baseElement.style.transform = `scaleX(${scaleX}) scaleY(${scaleY})`;
+            baseElement.style.opacity = '1';
+            baseElement.style.filter = 'none';
+
+            // 全屏背景恢复正常
+            fullscreenBg.style.transform = 'scale(1)';
+            fullscreenBg.style.filter = 'none';
+            if (fullscreenBg.classList.contains('active')) {
+              fullscreenBg.style.opacity = '1';
+            }
+
+            // 如果在第1页，确保全屏背景完全隐藏
+            if (currentPage === 0) {
+              fullscreenBg.style.opacity = '0';
+            }
+
+            setTimeout(() => {
+              baseElement.classList.remove('switching');
+              fullscreenBg.classList.remove('switching');
+              body.classList.remove('switching');
+              switchButton.disabled = false;
+              loadingSpinner.style.display = 'none';
+            }, 300);
+          }, 200);
+        }, 400);
+      }
+
+      // 预加载图片
+      function preloadImages() {
+        const images = [
+          'images/Group 1321314834.png',
+          'images/Group 1321314835.png'
+        ];
+        images.forEach(src => {
+          const img = new Image();
+          img.src = src;
+        });
+      }
+
+      // 更新页面内容
+      function updatePageContent() {
+        const backgroundImg = document.getElementById('u4_bg_img');
+        const fullscreenBg = document.getElementById('fullscreenBg');
+        const blackBackground = document.getElementById('u0');
+        const allElements = document.querySelectorAll('#base > div:not(#u0):not(#u4_bg)');
+
+        switch(currentPage) {
+          case 0:
+            // 原始页面 - 显示所有元素，立即隐藏全屏背景，显示黑色背景
+            backgroundImg.src = 'images/index/u4.png';
+            allElements.forEach(el => el.style.display = '');
+            // 立即隐藏全屏背景并清除背景图片
+            fullscreenBg.classList.remove('active');
+            fullscreenBg.style.opacity = '0';
+            setTimeout(() => {
+              fullscreenBg.style.backgroundImage = '';
+            }, 300);
+            blackBackground.style.display = '';
+            break;
+          case 1:
+            // 第二页 - 隐藏黑色背景，显示全屏背景
+            allElements.forEach(el => el.style.display = 'none');
+            blackBackground.style.display = 'none';
+            fullscreenBg.style.backgroundImage = 'url("images/Group 1321314834.png")';
+            fullscreenBg.classList.add('active');
+            break;
+          case 2:
+            // 第三页 - 隐藏黑色背景，显示全屏背景
+            allElements.forEach(el => el.style.display = 'none');
+            blackBackground.style.display = 'none';
+            fullscreenBg.style.backgroundImage = 'url("images/Group 1321314835.png")';
+            fullscreenBg.classList.add('active');
+            break;
+        }
+
+        // 更新页面指示器
+        updatePageIndicator();
+      }
+
+      // 更新页面指示器
+      function updatePageIndicator() {
+        const indicators = document.querySelectorAll('.indicator-dot');
+        indicators.forEach((dot, index) => {
+          if (index === currentPage) {
+            dot.classList.add('active');
+          } else {
+            dot.classList.remove('active');
+          }
+        });
+      }
+
+      // 直接跳转到指定页面
+      function goToPage(pageIndex) {
+        if (pageIndex === currentPage) return;
+
+        currentPage = pageIndex;
+        const baseElement = document.getElementById('base');
+        const fullscreenBg = document.getElementById('fullscreenBg');
+        const body = document.body;
+
+        // 添加快速切换动画
+        baseElement.classList.add('switching');
+        fullscreenBg.classList.add('switching');
+        body.classList.add('switching');
+
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        const originalWidth = 375;
+        const originalHeight = 812;
+        const scaleX = screenWidth / originalWidth;
+        const scaleY = screenHeight / originalHeight;
+
+        baseElement.style.transform = `scaleX(${scaleX * 0.9}) scaleY(${scaleY * 0.9})`;
+        baseElement.style.opacity = '0.5';
+        baseElement.style.filter = 'blur(2px)';
+
+        // 全屏背景动画
+        fullscreenBg.style.transform = 'scale(0.9)';
+        fullscreenBg.style.filter = 'blur(2px)';
+        if (fullscreenBg.classList.contains('active')) {
+          fullscreenBg.style.opacity = '0.5';
+        }
+
+        setTimeout(() => {
+          updatePageContent();
+
+          baseElement.style.transform = `scaleX(${scaleX}) scaleY(${scaleY})`;
+          baseElement.style.opacity = '1';
+          baseElement.style.filter = 'none';
+
+          // 恢复全屏背景
+          fullscreenBg.style.transform = 'scale(1)';
+          fullscreenBg.style.filter = 'none';
+          if (fullscreenBg.classList.contains('active')) {
+            fullscreenBg.style.opacity = '1';
+          }
+
+          setTimeout(() => {
+            baseElement.classList.remove('switching');
+            fullscreenBg.classList.remove('switching');
+            body.classList.remove('switching');
+          }, 200);
+        }, 200);
+      }
+
+      // 页面加载完成后执行缩放和初始化
+      window.addEventListener('load', function() {
+        scaleContent();
+        preloadImages(); // 预加载图片
+
+        // 为指示器添加点击事件
+        const indicators = document.querySelectorAll('.indicator-dot');
+        indicators.forEach((dot, index) => {
+          dot.addEventListener('click', () => goToPage(index));
+        });
+
+        // 添加键盘快捷键支持
+        document.addEventListener('keydown', function(event) {
+          switch(event.key) {
+            case 'ArrowRight':
+            case ' ':  // 空格键
+              event.preventDefault();
+              switchPage();
+              break;
+            case 'ArrowLeft':
+              event.preventDefault();
+              // 向前切换
+              currentPage = (currentPage - 1 + totalPages) % totalPages;
+              goToPage(currentPage);
+              break;
+            case '1':
+              event.preventDefault();
+              goToPage(0);
+              break;
+            case '2':
+              event.preventDefault();
+              goToPage(1);
+              break;
+            case '3':
+              event.preventDefault();
+              goToPage(2);
+              break;
+          }
+        });
+      });
+      window.addEventListener('resize', scaleContent);
+    </script>
+  </head>
+  <body>
+    <!-- 全屏背景图片 -->
+    <div id="fullscreenBg" class="fullscreen-background"></div>
+
+    <div id="base" class="">
+
+      <!-- Unnamed (矩形) -->
+      <div id="u0" class="ax_default box_2">
+        <div id="u0_div" class=""></div>
+      </div>
+
+      <!-- Unnamed (图片) -->
+      <div id="u1" class="ax_default _图片">
+        <img id="u1_img" class="img " src="images/index/u1.png"/>
+      </div>
+
+      <!-- u4 背景层图片 -->
+      <div id="u4_bg" class="ax_default _图片">
+        <img id="u4_bg_img" class="img " src="images/index/u4.png"/>
+      </div>
+
+      <!-- Unnamed (图片) -->
+      <div id="u2" class="ax_default _图片">
+        <img id="u2_img" class="img " src="images/index/u2.png"/>
+      </div>
+
+      <!-- Unnamed (矩形) -->
+      <div id="u3" class="ax_default label">
+        <div id="u3_div" class=""></div>
+        <div id="u3_text" class="text ">
+          <p><span>刚健、肃杀与收敛力</span></p>
+        </div>
+      </div>
+
+      <!-- Unnamed (矩形) -->
+      <div id="u4" class="ax_default _二级标题">
+        <div id="u4_div" class=""></div>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u5" class="ax_default _二级标题">
+        <img id="u5_img" class="img " src="images/index/u5.png"/>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u6" class="ax_default _二级标题">
+        <img id="u6_img" class="img " src="images/index/u5.png"/>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u7" class="ax_default _二级标题">
+        <img id="u7_img" class="img " src="images/index/u5.png"/>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u8" class="ax_default _二级标题">
+        <img id="u8_img" class="img " src="images/index/u5.png"/>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u9" class="ax_default _二级标题">
+        <img id="u9_img" class="img " src="images/index/u5.png"/>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u10" class="ax_default _二级标题">
+        <img id="u10_img" class="img " src="images/index/u10.png"/>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u11" class="ax_default _二级标题">
+        <img id="u11_img" class="img " src="images/index/u11.png"/>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u12" class="ax_default _二级标题">
+        <img id="u12_img" class="img " src="images/index/u12.png"/>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u13" class="ax_default _二级标题">
+        <img id="u13_img" class="img " src="images/index/u13.png"/>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u14" class="ax_default _二级标题">
+        <img id="u14_img" class="img " src="images/index/u14.png"/>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u15" class="ax_default _二级标题">
+        <img id="u15_img" class="img " src="images/index/u15.png"/>
+      </div>
+
+      <!-- Unnamed (矩形) -->
+      <div id="u16" class="ax_default _二级标题">
+        <div id="u16_div" class=""></div>
+      </div>
+
+      <!-- Unnamed (组 合) -->
+      <div id="u17" class="ax_default" data-left="125" data-top="329" data-width="13" data-height="12">
+
+        <!-- Unnamed (形状) -->
+        <div id="u18" class="ax_default _二级标题">
+          <img id="u18_img" class="img " src="images/index/u18.png"/>
+        </div>
+
+        <!-- Unnamed (形状) -->
+        <div id="u19" class="ax_default _二级标题">
+          <img id="u19_img" class="img " src="images/index/u19.png"/>
+        </div>
+      </div>
+
+      <!-- Unnamed (矩形) -->
+      <div id="u20" class="ax_default _二级标题">
+        <div id="u20_div" class=""></div>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u21" class="ax_default _二级标题">
+        <img id="u21_img" class="img " src="images/index/u21.png"/>
+      </div>
+
+      <!-- Unnamed (矩形) -->
+      <div id="u22" class="ax_default _二级标题">
+        <div id="u22_div" class=""></div>
+      </div>
+
+      <!-- Unnamed (组 合) -->
+      <div id="u23" class="ax_default" data-left="314" data-top="329" data-width="13" data-height="12">
+
+        <!-- Unnamed (形状) -->
+        <div id="u24" class="ax_default _二级标题">
+          <img id="u24_img" class="img " src="images/index/u24.png"/>
+        </div>
+
+        <!-- Unnamed (形状) -->
+        <div id="u25" class="ax_default _二级标题">
+          <img id="u25_img" class="img " src="images/index/u25.png"/>
+        </div>
+      </div>
+
+      <!-- Unnamed (组 合) -->
+      <div id="u26" class="ax_default" data-left="179" data-top="266" data-width="21" data-height="19">
+
+        <!-- Unnamed (形状) -->
+        <div id="u27" class="ax_default _二级标题">
+          <img id="u27_img" class="img " src="images/index/u27.png"/>
+        </div>
+
+        <!-- Unnamed (形状) -->
+        <div id="u28" class="ax_default _二级标题">
+          <img id="u28_img" class="img " src="images/index/u28.png"/>
+        </div>
+
+        <!-- Unnamed (形状) -->
+        <div id="u29" class="ax_default _二级标题">
+          <img id="u29_img" class="img " src="images/index/u29.png"/>
+        </div>
+
+        <!-- Unnamed (形状) -->
+        <div id="u30" class="ax_default _二级标题">
+          <img id="u30_img" class="img " src="images/index/u30.png"/>
+        </div>
+      </div>
+
+      <!-- Unnamed (形状) -->
+      <div id="u31" class="ax_default _二级标题">
+        <img id="u31_img" class="img " src="images/index/u31.png"/>
+      </div>
+
+      <!-- Unnamed (图片) -->
+      <div id="u32" class="ax_default _图片">
+        <img id="u32_img" class="img " src="images/index/u32.png"/>
+      </div>
+
+      <!-- Unnamed (矩形) -->
+      <div id="u33" class="ax_default label">
+        <div id="u33_div" class=""></div>
+        <div id="u33_text" class="text ">
+          <p><span>Hello&nbsp; welcome</span></p><p><span>风携星光，轻叩旅人心扉</span></p><p><span>6-6805</span></p>
+        </div>
+      </div>
+
+
+      <!-- Unnamed (矩形) -->
+      <div id="u35" class="ax_default label">
+        <div id="u35_div" class=""></div>
+        <div id="u35_text" class="text ">
+          <p><span>回忆行程</span></p>
+        </div>
+      </div>
+
+      <!-- Unnamed (组 合) -->
+      <div id="u36" class="ax_default" data-left="266" data-top="41" data-width="25" data-height="20">
+
+        <!-- Unnamed (形状) -->
+        <div id="u37" class="ax_default _二级标题">
+          <img id="u37_img" class="img " src="images/index/u37.png"/>
+        </div>
+
+        <!-- Unnamed (形状) -->
+        <div id="u38" class="ax_default _二级标题">
+          <img id="u38_img" class="img " src="images/index/u38.png"/>
+        </div>
+      </div>
+
+
+
+    </div>
+
+    <!-- 页面切换按钮 -->
+    <div id="switchButton" class="switch-button" onclick="switchPage()">
+      <div class="switch-icon">
+        <div class="switch-line"></div>
+        <div class="switch-line"></div>
+        <div class="switch-line"></div>
+      </div>
+      <span class="switch-text">切换</span>
+      <div class="loading-spinner" style="display: none;">
+        <div class="spinner-ring"></div>
+      </div>
+    </div>
+
+    <!-- 页面指示器 -->
+    <div class="page-indicator">
+      <div class="indicator-dot active" data-page="0"></div>
+      <div class="indicator-dot" data-page="1"></div>
+      <div class="indicator-dot" data-page="2"></div>
+    </div>
+  </body>
+</html>
