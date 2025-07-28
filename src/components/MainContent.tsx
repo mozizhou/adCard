@@ -12,7 +12,6 @@ import { useStore } from "@/app/store/store";
 import { Message } from "@/app/types";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMobileAudio } from '@/hooks/useMobileAudio';
 
 const { Title } = Typography;
 
@@ -23,7 +22,6 @@ interface MainContentProps {
 export default function MainContent({ directMode = false }: MainContentProps) {
   const [value, setValue] = useState<string>("");
   const [messageList, setMessageList] = useState<Message[]>([]);
-  const [currentPlayingId, setCurrentPlayingId] = useState<number | null>(null);
   const mainRef = useRef<GetRef<typeof Bubble.List>>(null);
   const user = useStore((state) => state.user);
   const messageData = useStore((state) => state.messageData);
@@ -108,83 +106,26 @@ export default function MainContent({ directMode = false }: MainContentProps) {
     }
     setMessageData(messageData);
   };
-  const { playAudio, stopAudio, isPlaying, error } = useMobileAudio({
-    retryAttempts: 3,
-    retryDelay: 800,
-    onPlayStart: () => {
-      console.log('音频开始播放');
-    },
-    onPlayEnd: () => {
-      console.log('音频播放结束');
-      // 音频播放完成后停止动画
-      setMessageList((list) => {
-        let ary = list.map((data) =>
-          data.id === currentPlayingId ? { ...data, voiceType: 0 } : data
-        );
-        return ary;
-      });
-      setCurrentPlayingId(null);
-    },
-    onPlayError: (err) => {
-      console.error('音频播放失败:', err);
-      // 更新UI状态
-      setMessageList((list) => {
-        let ary = list.map((data) =>
-          data.id === currentPlayingId ? { ...data, voiceType: 0 } : data
-        );
-        return ary;
-      });
-      setCurrentPlayingId(null);
-    }
-  });
-
-  const togglePlay = (e: Message) => {
-    // 如果当前正在播放，则停止播放
-    if (currentPlayingId === e.id) {
-      stopAudio();
-      setMessageList((list) => {
-        let ary = list.map((data) =>
-          data.id === e.id ? { ...data, voiceType: 0 } : data
-        );
-        return ary;
-      });
-      setCurrentPlayingId(null);
-      return;
-    }
-
-    // 停止之前播放的音频
-    if (currentPlayingId !== null) {
-      stopAudio();
-      setMessageList((list) => {
-        let ary = list.map((data) =>
-          data.id === currentPlayingId ? { ...data, voiceType: 0 } : data
-        );
-        return ary;
-      });
-    }
-
-    setCurrentPlayingId(e.id);
+  let audio = useRef<any>(null);
+  const togglePlay = (e: Message, index: number) => {
     setMessageList((list) => {
       let ary = list.map((data) =>
         data.id === e.id ? { ...data, voiceType: 1 } : data
       );
       return ary;
     });
-
-    // 设置超时保护，防止动画一直显示
-    const timeoutId = setTimeout(() => {
-      console.warn('音频播放超时，强制停止动画');
-      setMessageList((list) => {
-        let ary = list.map((data) =>
-          data.id === e.id ? { ...data, voiceType: 0 } : data
-        );
-        return ary;
+    if (audio.current != null) {
+      audio.current.pause();
+      let array = messageList.map((ele, i) => {
+        if (ele.id == e.id) {
+          ele.voiceType = 1;
+        } else {
+          ele.voiceType = 0;
+        }
+        return ele;
       });
-      setCurrentPlayingId(null);
-    }, 30000); // 30秒超时
-
-    // 关键：在用户点击事件中立即开始音频请求和播放流程
-    // 不使用 async/await，避免打断用户交互链
+      setMessageList(array);
+    }
     fetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -194,65 +135,30 @@ export default function MainContent({ directMode = false }: MainContentProps) {
         id: user?.id,
         direct_mode: directMode,
       }),
-    }).then(res => {
-      // 检查请求是否成功
-      if (!res.ok) {
-        clearTimeout(timeoutId);
-        throw new Error(`TTS请求失败: ${res.status} ${res.statusText}`);
-      }
-
-      // 更新为播放动画状态
-      setMessageList((list) => {
-        let ary = list.map((data) =>
-          data.id === e.id ? { ...data, voiceType: 2 } : data
-        );
-        return ary;
+    })
+      .then(async (res) => {
+        const audioBlob = await res.blob(); // 获取 Blob 数据
+        const audioUrl = URL.createObjectURL(audioBlob); // 生成 URL
+        audio.current = new Audio(audioUrl); // 创建 Audio 对象
+        audio.current.play(); // 播放音频
+        setMessageList((list) => {
+          let ary = list.map((data) =>
+              data.id === e.id ? { ...data, voiceType: 2 } : data
+          );
+          return ary;
+        });
+        audio.current.addEventListener("ended", () => {
+          setMessageList((list) => {
+            let ary = list.map((data) =>
+              data.id === e.id ? { ...data, voiceType: 0 } : data
+            );
+            return ary;
+          });
+        });
+      })
+      .then((data) => {
+        console.log(data);
       });
-
-      return res.blob();
-    }).then(audioBlob => {
-      // 检查音频数据是否有效
-      if (audioBlob.size === 0) {
-        clearTimeout(timeoutId);
-        throw new Error('接收到空的音频数据');
-      }
-
-      // 显示音频大小信息
-      const audioSizeKB = (audioBlob.size / 1024).toFixed(2);
-      const audioSizeMB = (audioBlob.size / (1024 * 1024)).toFixed(2);
-      const sizeText = audioBlob.size > 1024 * 1024
-        ? `${audioSizeMB} MB`
-        : `${audioSizeKB} KB`;
-
-      message.info(`音频接收完成，大小: ${sizeText}`, 2);
-
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      // 关键：在同一个用户交互链中直接播放音频
-      return playAudio(audioUrl).then(success => {
-        clearTimeout(timeoutId);
-
-        // 清理URL对象
-        setTimeout(() => {
-          URL.revokeObjectURL(audioUrl);
-        }, 1000);
-
-        if (!success) {
-          throw new Error('音频播放失败');
-        }
-      });
-    }).catch(error => {
-      console.error('TTS请求失败:', error);
-      clearTimeout(timeoutId);
-      // 请求失败时立即停止动画
-      setMessageList((list) => {
-        let ary = list.map((data) =>
-          data.id === e.id ? { ...data, voiceType: 0 } : data
-        );
-        return ary;
-      });
-      setCurrentPlayingId(null);
-    });
   };
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -393,7 +299,7 @@ export default function MainContent({ directMode = false }: MainContentProps) {
                     ),
                   footer: e.type == "start" && (
                     <div
-                      onClick={() => togglePlay(e)}
+                      onClick={() => togglePlay(e, index)}
                       className="cursor-pointer"
                     >
                       {e.voiceType == 1 ? (
@@ -447,5 +353,3 @@ export default function MainContent({ directMode = false }: MainContentProps) {
     </div>
   );
 }
-
-
