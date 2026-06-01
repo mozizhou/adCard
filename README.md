@@ -1,156 +1,63 @@
-# AI Card 项目
+# adCard
 
-这是一个基于 Next.js 的 AI 聊天卡片项目，支持多角色对话和静态页面展示。
+基于 **Next.js 15 + React 19 + TypeScript** 的 AI 聊天卡片项目，支持多角色对话、静态页面导出与 APNG 图片压缩优化。
 
-## 🌟 功能特性
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61dafb?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)](https://www.typescriptlang.org/)
 
-- 🤖 **AI 角色对话系统** - 支持多角色智能对话
-- 🎨 **多页面路由支持** - 完整的页面导航系统
-- 📱 **响应式设计** - 完美适配移动端和桌面端
-- 🖼️ **APNG 图片压缩优化** - 97.1% 压缩率，极速加载
-- 🚀 **静态页面导出** - 支持静态部署到任何服务器
-- 🎯 **现代化技术栈** - Next.js 15 + React 19 + TypeScript
+## 功能特性
 
-## 🛠️ 技术栈
+- AI 多角色智能对话
+- 多页面路由与静态导出
+- 响应式设计，适配移动端与桌面端
+- APNG 图片压缩（97%+ 压缩率）
+- 现代化技术栈：Next.js 15 + React 19 + Tailwind CSS
 
-- **前端框架**: Next.js 15
-- **UI 库**: React 19, Ant Design
-- **样式**: Tailwind CSS
-- **状态管理**: Zustand
-- **图片处理**: Python + Pillow + OpenCV
-- **类型检查**: TypeScript
-- **构建工具**: Next.js Build System
+## 技术栈
 
-## 🚀 快速开始
+| 类别 | 技术 |
+|------|------|
+| 框架 | Next.js 15、React 19 |
+| UI | Ant Design、Tailwind CSS |
+| 状态 | Zustand |
+| 语言 | TypeScript |
+| 图片处理 | Python + Pillow + OpenCV |
 
-### 1. 克隆项目
-
-```bash
-git clone https://gitee.com/sun-yiyi-1/ai-card.git
-cd ai-card
-```
-
-### 2. 安装依赖
+## 快速开始
 
 ```bash
 npm install
-```
-
-### 3. 开发模式
-
-```bash
 npm run dev
 ```
 
-访问 [http://localhost:3000](http://localhost:3000) 查看应用。
+访问 http://localhost:3000
 
-### 4. 构建静态页面
+## 构建与部署
 
 ```bash
 npm run build
 ```
 
-构建完成后，静态文件将生成在 `out/` 目录中。
+静态文件输出至 `out/` 目录，可部署至 Nginx、Vercel、Netlify 等。
 
-## 📁 项目结构
+## 页面路由
 
-```
-ai-card/
-├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── direct-chat/       # AI 对话页面
-│   │   ├── boxing/            # 拳击页面
-│   │   ├── hotel-card/        # 酒店房卡页面
-│   │   ├── links/             # 导航页面
-│   │   └── ...
-│   ├── components/            # React 组件
-│   └── types/                 # TypeScript 类型定义
-├── apng-processor/            # APNG 压缩工具
-├── public/                    # 静态资源
-├── out/                       # 构建输出 (npm run build 后生成)
-└── 配置文件
-```
+| 路径 | 功能 |
+|------|------|
+| `/` | 主页 |
+| `/direct-chat?id=1` | AI 角色对话 |
+| `/boxing` | 拳击展示页 |
+| `/hotel-card` | 酒店房卡页 |
+| `/links` | 导航页 |
 
-## 🌐 页面路由
+## Author
 
-| 路径 | 功能 | 描述 |
-|------|------|------|
-| `/` | 主页 | 项目首页 |
-| `/direct-chat?id=1` | AI 对话 | 与 ID=1 角色对话 |
-| `/direct-chat?id=2` | AI 对话 | 与 ID=7 角色对话 (映射) |
-| `/direct-chat?id=7` | 静态页面 | 显示静态内容 |
-| `/boxing` | 拳击页面 | 展示拳击图片 |
-| `/hotel-card` | 酒店房卡 | 酒店房卡页面 |
-| `/links` | 导航页面 | 所有页面导航 |
+**曹宁** · Full-stack / AI Application Developer
 
-## 🖼️ APNG 压缩工具
+- GitHub: [@mozizhou](https://github.com/mozizhou)
+- 相关项目: [ai-card-vue](https://github.com/mozizhou/ai-card-vue)
 
-项目包含完整的 APNG 图片压缩工具链，实现了惊人的压缩效果：
+## License
 
-### 压缩效果
-- **原始大小**: 52.89 MB
-- **压缩后**: 1.55 MB
-- **压缩率**: 97.1%
-- **质量**: 保持完整动画效果
-
-### 使用方法
-```bash
-cd apng-processor
-python process_webp_only.py
-```
-
-详细说明请查看 `apng-processor/README.md`
-
-## 🚀 部署指南
-
-### 静态部署 (推荐)
-
-1. **构建静态页面**
-```bash
-npm run build
-```
-
-2. **部署到服务器**
-```bash
-# 将 out/ 目录内容上传到服务器
-scp -r out/* user@your-server:/var/www/html/
-```
-
-3. **支持的部署平台**
-- ✅ Nginx
-- ✅ Apache
-- ✅ Vercel
-- ✅ Netlify
-- ✅ GitHub Pages
-- ✅ 任何静态文件服务器
-
-详细部署说明请查看 [STATIC_DEPLOYMENT_GUIDE.md](./STATIC_DEPLOYMENT_GUIDE.md)
-
-## 📊 性能优化
-
-- ✅ **图片压缩**: APNG 压缩率达 97.1%
-- ✅ **代码分割**: Next.js 自动代码分割
-- ✅ **静态生成**: 预渲染所有页面
-- ✅ **资源优化**: 自动压缩 CSS/JS
-- ✅ **缓存策略**: 合理的缓存配置
-
-## 🤝 贡献指南
-
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 发起 Pull Request
-
-## 📄 许可证
-
-MIT License
-
-## 🔗 相关链接
-
-- **Gitee 仓库**: https://gitee.com/sun-yiyi-1/ai-card
-- **技术文档**: [STATIC_DEPLOYMENT_GUIDE.md](./STATIC_DEPLOYMENT_GUIDE.md)
-
----
-
-🎉 **感谢使用 AI Card 项目！**
+MIT
